@@ -120,8 +120,15 @@
         return;
       }
 
-      document.getElementById('btnSubmit').disabled = true; // cegah kirim ganda
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true; // cegah kirim ganda
       tg.sendData(json); // Mini App akan tertutup otomatis setelah ini
+
+      // Jika 2 detik kemudian Mini App masih terbuka, berarti pengiriman gagal
+      setTimeout(() => {
+        btn.disabled = false;
+        notify('Data belum terkirim. Buka form ini lewat tombol keyboard "☁️ Input Data Nextcloud" setelah /start, bukan lewat tombol "Open".');
+      }, 2000);
     }
   </script>
 </body>
