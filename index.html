@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nextcloud Data Uploader</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #18222d);
+      --text-color: var(--tg-theme-text-color, #ffffff);
+      --hint-color: var(--tg-theme-hint-color, #7f8c8d);
+      --button-color: var(--tg-theme-button-color, #2ea6ff);
+      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg: var(--tg-theme-secondary-bg-color, #212d3b);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; min-height: 100vh; display: flex; flex-direction: column; gap: 12px; }
+    .header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(127,127,127,0.25); }
+    .header-icon { width: 36px; height: 36px; background: #0082c9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .user-card { background: var(--secondary-bg); padding: 10px; border-radius: 8px; font-size: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    label { font-size: 12px; color: var(--hint-color); }
+    /* font-size 16px mencegah iOS melakukan auto-zoom saat input difokuskan */
+    input, select, textarea { width: 100%; padding: 10px; font-size: 16px; background: var(--secondary-bg); border: 1px solid rgba(127,127,127,0.25); border-radius: 6px; color: var(--text-color); outline: none; }
+    textarea { resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--button-color); }
+    .counter { font-size: 11px; color: var(--hint-color); text-align: right; }
+    .btn-submit { width: 100%; padding: 12px; font-size: 15px; background: var(--button-color); color: var(--button-text-color); border: none; border-radius: 8px; font-weight: bold; margin-top: 14px; cursor: pointer; }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-icon">☁️</div>
+    <div>
+      <h3 style="font-size: 15px;">Input Data Nextcloud</h3>
+      <p style="font-size: 11px; color: var(--hint-color);">Kirim data langsung ke Nextcloud lokal</p>
+    </div>
+  </div>
+
+  <div class="user-card">
+    👤 <b id="userName">User Telegram</b> (<span id="userId">ID</span>)
+  </div>
+
+  <div class="form-group">
+    <label for="title">Judul Dokumen / Catatan</label>
+    <input type="text" id="title" placeholder="Contoh: Catatan Luwak" maxlength="100" autocomplete="off">
+  </div>
+
+  <div class="form-group">
+    <label for="folder">Pilih Folder Nextcloud</label>
+    <select id="folder">
+      <option value="/Gambar">/Gambar</option>
+      <option value="/Dokumen" selected>/Dokumen</option>
+      <option value="/">/ (Root Folder)</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="description">Catatan Tambahan</label>
+    <textarea id="description" rows="4" placeholder="Isi deskripsi..." maxlength="2000"></textarea>
+    <div class="counter"><span id="charCount">0</span>/2000</div>
+  </div>
+
+  <button type="button" class="btn-submit" id="btnSubmit">🚀 Simpan ke Nextcloud</button>
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp;
+    const MAX_BYTES = 3500; // batas sendData Telegram = 4096 byte, sisakan ruang aman
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+
+      const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (user) {
+        document.getElementById('userName').textContent =
+          `${user.first_name || ''} ${user.last_name || ''}`.trim();
+        document.getElementById('userId').textContent = user.id;
+      }
+    }
+
+    // Peringatan bila halaman dibuka di luar Telegram
+    function notify(msg) {
+      if (tg && tg.initData) tg.showAlert(msg);
+      else alert(msg);
+    }
+
+    const descEl = document.getElementById('description');
+    descEl.addEventListener('input', () => {
+      document.getElementById('charCount').textContent = descEl.value.length;
+    });
+
+    document.getElementById('btnSubmit').addEventListener('click', simpanData);
+
+    function simpanData() {
+      const title = document.getElementById('title').value.trim();
+      const folder = document.getElementById('folder').value;
+      const description = descEl.value.trim();
+
+      if (!title) {
+        notify('Judul dokumen tidak boleh kosong!');
+        return;
+      }
+
+      if (!tg || !tg.initData) {
+        notify('Halaman ini harus dibuka lewat tombol di bot Telegram (ketik /start), bukan dari browser.');
+        return;
+      }
+
+      // Payload dikirim ke bot.py (dibaca sebagai payload['title'], dst.)
+      const payload = { title, folder, description };
+      const json = JSON.stringify(payload);
+
+      // Ukuran dihitung dalam byte (huruf non-Latin/emoji lebih besar dari 1 byte)
+      if (new TextEncoder().encode(json).length > MAX_BYTES) {
+        notify('Data terlalu panjang. Persingkat judul atau catatan.');
+        return;
+      }
+
+      document.getElementById('btnSubmit').disabled = true; // cegah kirim ganda
+      tg.sendData(json); // Mini App akan tertutup otomatis setelah ini
+    }
+  </script>
+</body>
+</html>
