@@ -1,459 +1,288 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nextcloud Uploader - Telegram Mini App</title>
-    <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        tg: {
-                            bg: 'var(--tg-theme-bg-color, #17212b)',
-                            secondaryBg: 'var(--tg-theme-secondary-bg-color, #232e3c)',
-                            text: 'var(--tg-theme-text-color, #f5f5f5)',
-                            hint: 'var(--tg-theme-hint-color, #708499)',
-                            link: 'var(--tg-theme-link-color, #64b5ef)',
-                            button: 'var(--tg-theme-button-color, #5288c1)',
-                            buttonText: 'var(--tg-theme-button-text-color, #ffffff)',
-                            ncBlue: '#0082c9',
-                            ncBlueDark: '#00659c'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nextcloud Data Uploader</title>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #18222d);
+      --text-color: var(--tg-theme-text-color, #ffffff);
+      --hint-color: var(--tg-theme-hint-color, #7f8c8d);
+      --button-color: var(--tg-theme-button-color, #2ea6ff);
+      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+      --secondary-bg: var(--tg-theme-secondary-bg-color, #212d3b);
+    }
 
-    <style>
-        body {
-            background-color: var(--tg-theme-bg-color, #17212b);
-            color: var(--tg-theme-text-color, #f5f5f5);
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
 
-        /* Custom scrollbar for dark theme */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 100vh;
+    }
 
-        .input-field {
-            background-color: var(--tg-theme-secondary-bg-color, #232e3c);
-            color: var(--tg-theme-text-color, #ffffff);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.2s ease;
-        }
-        .input-field:focus {
-            outline: none;
-            border-color: #0082c9;
-            box-shadow: 0 0 0 2px rgba(0, 130, 201, 0.2);
-        }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        /* Drag and Drop Zone Animation */
-        .drop-zone--over {
-            border-color: #0082c9 !important;
-            background-color: rgba(0, 130, 201, 0.1) !important;
-        }
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #0082c9; /* Warna khas Nextcloud */
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 20px;
+      color: white;
+    }
 
-        .pulse-animation {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
-    </style>
+    .header-title h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-title p {
+      font-size: 12px;
+      color: var(--hint-color);
+    }
+
+    .user-card {
+      background-color: var(--secondary-bg);
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--button-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--hint-color);
+      font-weight: 500;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--secondary-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: var(--text-color);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus, select:focus, textarea:focus {
+      border-color: var(--button-color);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      background-color: var(--secondary-bg);
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .upload-area:active {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .upload-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .file-list {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .file-item {
+      background-color: var(--secondary-bg);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--button-color);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-submit:active {
+      opacity: 0.9;
+    }
+
+    #fileInput {
+      display: none;
+    }
+  </style>
 </head>
-<body class="min-h-screen pb-24 select-none">
+<body>
 
-    <header class="bg-tg-secondaryBg border-b border-white/10 p-4 sticky top-0 z-40 shadow-md">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-tg-ncBlue flex items-center justify-center text-white font-bold shadow-lg">
-                    <i class="fa-solid fa-cloud text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="font-semibold text-sm leading-tight">Nextcloud Sync</h1>
-                    <p class="text-xs text-tg-hint flex items-center gap-1" id="tg-user-display">
-                        <span class="w-2 h-2 rounded-full bg-yellow-500 inline-block" id="status-dot"></span>
-                        <span id="user-name">Memuat profil Telegram...</span>
-                    </p>
-                </div>
-            </div>
-            <div class="text-right">
-                <span class="text-[10px] bg-tg-ncBlue/20 text-tg-ncBlue border border-tg-ncBlue/30 px-2 py-0.5 rounded-full font-medium">
-                    WebDAV Mode
-                </span>
-            </div>
-        </div>
-    </header>
+  <div class="header">
+    <div class="header-icon">☁️</div>
+    <div class="header-title">
+      <h1>Input Data Nextcloud</h1>
+      <p>Upload berkas & catatan langsung ke server</p>
+    </div>
+  </div>
 
-    <main class="p-4 max-w-lg mx-auto space-y-4">
+  <div class="user-card">
+    <div class="user-avatar" id="userAvatar">U</div>
+    <div>
+      <div id="userName" style="font-weight: 600;">Pengguna Telegram</div>
+      <div id="userId" style="color: var(--hint-color); font-size: 11px;">ID: -</div>
+    </div>
+  </div>
 
-        <!-- Info Card -->
-        <div class="bg-tg-secondaryBg/60 border border-white/5 rounded-xl p-3 flex items-start space-x-3 text-xs text-tg-hint">
-            <i class="fa-solid fa-circle-info text-tg-ncBlue text-base mt-0.5"></i>
-            <div>
-                <p class="text-tg-text font-medium text-xs mb-0.5">Input Data & Berkas</p>
-                Pesan dan file yang dikirim via Mini App ini akan langsung ditransfer ke server Nextcloud Anda.
-            </div>
-        </div>
+  <form id="uploadForm">
+    <div class="form-group">
+      <label for="title">Judul Dokumen / Catatan</label>
+      <input type="text" id="title" placeholder="Contoh: Laporan Keuangan Sep 2026" required>
+    </div>
 
-        <!-- Main Form -->
-        <form id="nextcloud-form" onsubmit="event.preventDefault();" class="space-y-4">
-            
-            <!-- Nama / Judul Entry -->
-            <div>
-                <label class="block text-xs font-medium text-tg-hint mb-1">
-                    <i class="fa-solid fa-tag text-xs mr-1"></i> Judul / Nama Input <span class="text-red-400">*</span>
-                </label>
-                <input type="text" id="data-name" required placeholder="Contoh: Laporan Keuangan Mingguan" 
-                    class="w-full px-3 py-2.5 rounded-lg text-sm input-field">
-            </div>
+    <div class="form-group" style="margin-top: 12px;">
+      <label for="folder">Pilih Folder Nextcloud</label>
+      <select id="folder">
+        <option value="/Dokumen">/Dokumen</option>
+        <option value="/Laporan">/Laporan</option>
+        <option value="/Uploads">/Uploads</option>
+        <option value="/Umum">/Umum</option>
+      </select>
+    </div>
 
-            <!-- Kategori / Folder Tujuan -->
-            <div>
-                <label class="block text-xs font-medium text-tg-hint mb-1">
-                    <i class="fa-solid fa-folder-tree text-xs mr-1"></i> Folder Tujuan Nextcloud
-                </label>
-                <select id="nc-folder" class="w-full px-3 py-2.5 rounded-lg text-sm input-field">
-                    <option value="/Dokumen/">📁 /Dokumen/</option>
-                    <option value="/Keuangan/">📁 /Keuangan/</option>
-                    <option value="/Foto_Upload/">📁 /Foto_Upload/</option>
-                    <option value="/Umum/" selected>📁 /Umum/</option>
-                </select>
-            </div>
+    <div class="form-group" style="margin-top: 12px;">
+      <label for="description">Catatan Tambahan</label>
+      <textarea id="description" rows="3" placeholder="Tambahkan rincian data jika ada..."></textarea>
+    </div>
 
-            <!-- Tanggal Input -->
-            <div>
-                <label class="block text-xs font-medium text-tg-hint mb-1">
-                    <i class="fa-solid fa-calendar-day text-xs mr-1"></i> Tanggal
-                </label>
-                <input type="date" id="data-date" class="w-full px-3 py-2.5 rounded-lg text-sm input-field">
-            </div>
+    <div class="form-group" style="margin-top: 12px;">
+      <label>Lampiran File</label>
+      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <span class="upload-icon">📁</span>
+        <span style="font-size: 13px; font-weight: 500;">Klik untuk memilih file</span>
+        <p style="font-size: 11px; color: var(--hint-color); margin-top: 4px;">Foto, Dokumen, atau PDF</p>
+      </div>
+      <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
+      <div class="file-list" id="fileList"></div>
+    </div>
 
-            <!-- Catatan / Deskripsi -->
-            <div>
-                <label class="block text-xs font-medium text-tg-hint mb-1">
-                    <i class="fa-solid fa-align-left text-xs mr-1"></i> Catatan Tambahan
-                </label>
-                <textarea id="data-notes" rows="3" placeholder="Tambahkan rincian atau keterangan data di sini..."
-                    class="w-full px-3 py-2.5 rounded-lg text-sm input-field resize-none"></textarea>
-            </div>
+    <button type="button" class="btn-submit" onclick="sendDataToBot()">Simpan ke Nextcloud</button>
+  </form>
 
-            <div>
-                <label class="block text-xs font-medium text-tg-hint mb-1">
-                    <i class="fa-solid fa-paperclip text-xs mr-1"></i> Lampiran File (Opsional)
-                </label>
+  <script>
+    // Inisialisasi Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Membuka tampilan menjadi layar penuh
 
-                <!-- Dropzone Area -->
-                <div id="drop-zone" class="border-2 border-dashed border-white/20 rounded-xl p-5 text-center cursor-pointer bg-tg-secondaryBg hover:border-tg-ncBlue transition duration-200">
-                    <input type="file" id="file-input" class="hidden" multiple />
-                    <div id="upload-prompt" class="space-y-2">
-                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-tg-ncBlue"></i>
-                        <p class="text-xs font-medium">Klik atau seret file ke area ini</p>
-                        <p class="text-[10px] text-tg-hint">Mendukung Gambar, PDF, DOCX, ZIP (Max 2GB via Local Server)</p>
-                    </div>
-                </div>
+    // Mengambil data pengguna dari Telegram
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+      document.getElementById('userName').innerText = `${user.first_name} ${user.last_name || ''}`;
+      document.getElementById('userId').innerText = `ID: ${user.id}`;
+      document.getElementById('userAvatar').innerText = user.first_name ? user.first_name[0] : 'U';
+    }
 
-                <!-- Preview File Container -->
-                <div id="file-preview-list" class="mt-3 space-y-2 hidden">
-                    <span class="text-xs font-medium text-tg-hint">Pratinjau File Dilampirkan:</span>
-                    <!-- Dynamic File Cards will be injected here -->
-                </div>
-            </div>
+    let selectedFiles = [];
 
-        </form>
+    function handleFiles(files) {
+      const fileList = document.getElementById('fileList');
+      fileList.innerHTML = '';
+      selectedFiles = Array.from(files);
 
-        <div id="sync-status-card" class="hidden bg-tg-secondaryBg border border-tg-ncBlue/30 rounded-xl p-4 space-y-3">
-            <div class="flex items-center justify-between text-xs">
-                <span class="font-medium flex items-center gap-2" id="status-title">
-                    <i class="fa-solid fa-spinner fa-spin text-tg-ncBlue"></i> Mengunggah ke Nextcloud...
-                </span>
-                <span class="text-tg-hint" id="status-percentage">0%</span>
-            </div>
-            <!-- Progress Bar -->
-            <div class="w-full bg-black/30 rounded-full h-2 overflow-hidden">
-                <div id="progress-bar" class="bg-tg-ncBlue h-full w-0 transition-all duration-300"></div>
-            </div>
-            <p class="text-[11px] text-tg-hint font-mono text-center" id="status-subtext">Menghubungkan ke endpoint WebDAV...</p>
-        </div>
+      selectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.innerHTML = `
+          <span>📄 ${file.name}</span>
+          <span style="color: var(--hint-color);">${(file.size / 1024).toFixed(1)} KB</span>
+        `;
+        fileList.appendChild(item);
+      });
+    }
 
-        <!-- Fallback Button if not running in Telegram WebApp -->
-        <div id="fallback-button-container" class="pt-2">
-            <button id="fallback-submit-btn" onclick="handleFormSubmission()"
-                class="w-full py-3 px-4 bg-tg-ncBlue hover:bg-tg-ncBlueDark text-white font-semibold rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> Kirim Data ke Nextcloud
-            </button>
-            <p id="tg-notice" class="text-[10px] text-tg-hint text-center mt-2 hidden">
-                *Tombol ini muncul karena aplikasi dibuka di luar lingkungan Telegram WebApp Native.
-            </p>
-        </div>
+    function sendDataToBot() {
+      const title = document.getElementById('title').value;
+      const folder = document.getElementById('folder').value;
+      const description = document.getElementById('description').value;
 
-    </main>
+      if (!title) {
+        tg.showAlert('Mohon isi judul dokumen terlebih dahulu!');
+        return;
+      }
 
-    <script>
-        // Inisialisasi Telegram WebApp SDK
-        const tg = window.Telegram?.WebApp || null;
-
-        // State variabel
-        let selectedFiles = [];
-        let userData = {
-            id: 'GUEST',
-            first_name: 'Pengguna',
-            username: 'Guest'
-        };
-
-        // Standard Window Load Initializer
-        window.onload = function() {
-            initApp();
-        };
-
-        function initApp() {
-            // Set Default Tanggal Hari Ini
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('data-date').value = today;
-
-            // Inisialisasi Telegram SDK jika tersedia
-            if (tg) {
-                tg.ready();
-                tg.expand(); // Memperluas antarmuka Mini App ke layar penuh
-
-                // Aktifkan Theme Telegram
-                if (tg.colorScheme === 'light') {
-                    document.body.classList.remove('select-none');
-                }
-
-                // Ambil data User dari Telegram InitData
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    userData = tg.initDataUnsafe.user;
-                    const userNameEl = document.getElementById('user-name');
-                    const statusDot = document.getElementById('status-dot');
-
-                    userNameEl.textContent = `${userData.first_name} ${userData.last_name || ''} (@${userData.username || 'n/a'})`;
-                    statusDot.className = 'w-2 h-2 rounded-full bg-green-500 inline-block';
-                } else {
-                    document.getElementById('user-name').textContent = "Telegram Guest User";
-                }
-
-                // Setup Telegram Main Button
-                tg.MainButton.setText("KIRIM KE NEXTCLOUD");
-                tg.MainButton.setParams({
-                    bg_color: "#0082c9",
-                    text_color: "#ffffff"
-                });
-                tg.MainButton.onClick(handleFormSubmission);
-                tg.MainButton.show();
-
-                // Sembunyikan tombol fallback biasa jika berada di dalam Telegram
-                document.getElementById('fallback-button-container').classList.add('hidden');
-            } else {
-                // Tampilan jika dibuka di browser standar
-                document.getElementById('user-name').textContent = "Browser Preview Mode";
-                document.getElementById('tg-notice').classList.remove('hidden');
-            }
-
-            // Setup File Upload Listeners
-            setupFileUpload();
+      // Menyusun data payload yang akan dikirim ke Bot Backend
+      const payload = {
+        action: "upload_data",
+        user_id: user ? user.id : null,
+        data: {
+          title: title,
+          folder: folder,
+          description: description,
+          filesCount: selectedFiles.length,
+          fileNames: selectedFiles.map(f => f.name)
         }
+      };
 
-        function setupFileUpload() {
-            const dropZone = document.getElementById('drop-zone');
-            const fileInput = document.getElementById('file-input');
-
-            dropZone.addEventListener('click', () => fileInput.click());
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    dropZone.classList.add('drop-zone--over');
-                }, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    dropZone.classList.remove('drop-zone--over');
-                }, false);
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                const files = e.dataTransfer.files;
-                handleFiles(files);
-            });
-
-            fileInput.addEventListener('change', (e) => {
-                handleFiles(e.target.files);
-            });
-        }
-
-        function handleFiles(files) {
-            for (let file of files) {
-                // Hindari duplikasi sederhana
-                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-                    selectedFiles.push(file);
-                }
-            }
-            renderPreviewList();
-        }
-
-        function renderPreviewList() {
-            const listContainer = document.getElementById('file-preview-list');
-            listContainer.innerHTML = '<span class="text-xs font-medium text-tg-hint">Pratinjau File Dilampirkan:</span>';
-
-            if (selectedFiles.length === 0) {
-                listContainer.classList.add('hidden');
-                return;
-            }
-
-            listContainer.classList.remove('hidden');
-
-            selectedFiles.forEach((file, index) => {
-                const fileCard = document.createElement('div');
-                fileCard.className = 'bg-tg-secondaryBg border border-white/10 rounded-lg p-2.5 flex items-center justify-between gap-3 text-xs';
-
-                const fileIcon = getFileIconClass(file.name);
-                const fileSizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-
-                fileCard.innerHTML = `
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <i class="${fileIcon} text-lg text-tg-ncBlue shrink-0"></i>
-                        <div class="truncate">
-                            <p class="font-medium truncate text-tg-text">${escapeHtml(file.name)}</p>
-                            <p class="text-[10px] text-tg-hint">${fileSizeFormatted}</p>
-                        </div>
-                    </div>
-                    <button type="button" onclick="removeFile(${index})" class="text-red-400 hover:text-red-300 p-1 shrink-0">
-                        <i class="fa-solid fa-trash-can text-sm"></i>
-                    </button>
-                `;
-
-                listContainer.appendChild(fileCard);
-            });
-        }
-
-        function removeFile(index) {
-            selectedFiles.splice(index, 1);
-            renderPreviewList();
-        }
-
-        function getFileIconClass(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'fa-solid fa-file-image';
-            if (['pdf'].includes(ext)) return 'fa-solid fa-file-pdf';
-            if (['doc', 'docx'].includes(ext)) return 'fa-solid fa-file-word';
-            if (['zip', 'rar', '7z'].includes(ext)) return 'fa-solid fa-file-zipper';
-            return 'fa-solid fa-file-lines';
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/[&<>"']/g, function(m) {
-                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-            });
-        }
-
-        function handleFormSubmission() {
-            const title = document.getElementById('data-name').value.trim();
-            const folder = document.getElementById('nc-folder').value;
-            const date = document.getElementById('data-date').value;
-            const notes = document.getElementById('data-notes').value.trim();
-
-            if (!title) {
-                if (tg) {
-                    tg.showAlert("Mohon isi Judul / Nama Input data!");
-                } else {
-                    alert("Mohon isi Judul / Nama Input data!");
-                }
-                return;
-            }
-
-            // Lock UI & Tampilkan status sync
-            if (tg) {
-                tg.MainButton.showProgress();
-                tg.MainButton.disable();
-            }
-
-            const statusCard = document.getElementById('sync-status-card');
-            const progressBar = document.getElementById('progress-bar');
-            const statusPercentage = document.getElementById('status-percentage');
-            const statusTitle = document.getElementById('status-title');
-            const statusSubtext = document.getElementById('status-subtext');
-
-            statusCard.classList.remove('hidden');
-            statusCard.scrollIntoView({ behavior: 'smooth' });
-
-            let progress = 0;
-            const payload = {
-                user: userData,
-                title: title,
-                folder: folder,
-                date: date,
-                notes: notes,
-                filesCount: selectedFiles.length,
-                fileNames: selectedFiles.map(f => f.name)
-            };
-
-            // Simulasi proses unggah/sinkronisasi HTTP WebDAV
-            const interval = setInterval(() => {
-                progress += 20;
-                progressBar.style.width = `${progress}%`;
-                statusPercentage.textContent = `${progress}%`;
-
-                if (progress === 20) {
-                    statusSubtext.textContent = `Membuat direktori Nextcloud di ${folder}...`;
-                } else if (progress === 60) {
-                    statusSubtext.textContent = selectedFiles.length > 0 
-                        ? `Mengunggah ${selectedFiles.length} berkas via WebDAV API...`
-                        : `Menyimpan data teks ke ${title}.txt...`;
-                } else if (progress === 100) {
-                    clearInterval(interval);
-                    
-                    // Sukses
-                    statusTitle.innerHTML = `<i class="fa-solid fa-circle-check text-green-400"></i> Berhasil Disimpan!`;
-                    statusSubtext.textContent = `Data & file sukses tersinkronkan ke Nextcloud.`;
-                    
-                    if (tg) {
-                        tg.MainButton.hideProgress();
-                        tg.MainButton.enable();
-                        tg.HapticFeedback.notificationOccurred('success');
-                        
-                        // Kirim data kembali ke Bot Telegram & Tutup Mini App
-                        setTimeout(() => {
-                            tg.sendData(JSON.stringify({
-                                status: 'success',
-                                action: 'nextcloud_upload',
-                                data: payload
-                            }));
-                        }, 1200);
-                    } else {
-                        setTimeout(() => {
-                            alert("Simulasi Sukses! Data telah siap dikirim ke bot Telegram / Nextcloud.");
-                        }, 500);
-                    }
-                }
-            }, 400);
-        }
-    </script>
+      // Mengirimkan data dalam bentuk JSON String ke Telegram Bot
+      tg.sendData(JSON.stringify(payload));
+    }
+  </script>
 </body>
 </html>
