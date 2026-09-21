@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Nextcloud Data Uploader</title>
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -15,272 +14,79 @@
       --button-text-color: var(--tg-theme-button-text-color, #ffffff);
       --secondary-bg: var(--tg-theme-secondary-bg-color, #212d3b);
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      user-select: none;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      min-height: 100vh;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .header-icon {
-      width: 40px;
-      height: 40px;
-      background-color: #0082c9; /* Warna khas Nextcloud */
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 20px;
-      color: white;
-    }
-
-    .header-title h1 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .header-title p {
-      font-size: 12px;
-      color: var(--hint-color);
-    }
-
-    .user-card {
-      background-color: var(--secondary-bg);
-      padding: 12px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-    }
-
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background-color: var(--button-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    label {
-      font-size: 13px;
-      color: var(--hint-color);
-      font-weight: 500;
-    }
-
-    input[type="text"], select, textarea {
-      width: 100%;
-      padding: 12px;
-      background-color: var(--secondary-bg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      color: var(--text-color);
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input[type="text"]:focus, select:focus, textarea:focus {
-      border-color: var(--button-color);
-    }
-
-    .upload-area {
-      border: 2px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      background-color: var(--secondary-bg);
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .upload-area:active {
-      background-color: rgba(255, 255, 255, 0.05);
-    }
-
-    .upload-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .file-list {
-      margin-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .file-item {
-      background-color: var(--secondary-bg);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--button-color);
-      color: var(--button-text-color);
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 15px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .btn-submit:active {
-      opacity: 0.9;
-    }
-
-    #fileInput {
-      display: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .header-icon { width: 36px; height: 36px; background: #0082c9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .user-card { background: var(--secondary-bg); padding: 10px; border-radius: 8px; font-size: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    label { font-size: 12px; color: var(--hint-color); }
+    input, select, textarea { width: 100%; padding: 10px; background: var(--secondary-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text-color); outline: none; }
+    .btn-submit { width: 100%; padding: 12px; background: var(--button-color); color: var(--button-text-color); border: none; border-radius: 8px; font-weight: bold; margin-top: 14px; cursor: pointer; }
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="header-icon">☁️</div>
-    <div class="header-title">
-      <h1>Input Data Nextcloud</h1>
-      <p>Upload berkas & catatan langsung ke server</p>
+    <div>
+      <h3 style="font-size: 15px;">Input Data Nextcloud</h3>
+      <p style="font-size: 11px; color: var(--hint-color);">Kirim data langsung ke Localhost</p>
     </div>
   </div>
 
   <div class="user-card">
-    <div class="user-avatar" id="userAvatar">U</div>
-    <div>
-      <div id="userName" style="font-weight: 600;">Pengguna Telegram</div>
-      <div id="userId" style="color: var(--hint-color); font-size: 11px;">ID: -</div>
-    </div>
+    👤 <b id="userName">User Telegram</b> (<span id="userId">ID</span>)
   </div>
 
-  <form id="uploadForm">
-    <div class="form-group">
-      <label for="title">Judul Dokumen / Catatan</label>
-      <input type="text" id="title" placeholder="Contoh: Foto Jalan-Jalan" required>
-    </div>
+  <div class="form-group">
+    <label>Judul Dokumen / Catatan</label>
+    <input type="text" id="title" placeholder="Contoh: Catatan Luwak" required>
+  </div>
 
-    <div class="form-group" style="margin-top: 12px;">
-      <label for="folder">Pilih Folder Nextcloud</label>
-      <select id="folder">
-        <option value="/Dokumen">/Dokumen</option>
-        <option value="/Gambar">/Gambar</option>
-        <option value="/Video">/Video</option>
-        <option value="/Umum">/Umum</option>
-      </select>
-    </div>
+  <div class="form-group">
+    <label>Pilih Folder Nextcloud</label>
+    <select id="folder">
+      <option value="/Gambar">/Gambar</option>
+      <option value="/Dokumen">/Dokumen</option>
+      <option value="/">/ (Root Folder)</option>
+    </select>
+  </div>
 
-    <div class="form-group" style="margin-top: 12px;">
-      <label for="description">Catatan Tambahan</label>
-      <textarea id="description" rows="3" placeholder="Tambahkan rincian data jika ada..."></textarea>
-    </div>
+  <div class="form-group">
+    <label>Catatan Tambahan</label>
+    <textarea id="description" rows="3" placeholder="Isi deskripsi..."></textarea>
+  </div>
 
-    <div class="form-group" style="margin-top: 12px;">
-      <label>Lampiran File</label>
-      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <span class="upload-icon">📁</span>
-        <span style="font-size: 13px; font-weight: 500;">Klik untuk memilih file</span>
-        <p style="font-size: 11px; color: var(--hint-color); margin-top: 4px;">Foto, Dokumen, atau PDF</p>
-      </div>
-      <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
-      <div class="file-list" id="fileList"></div>
-    </div>
-
-    <button type="button" class="btn-submit" onclick="sendDataToBot()">Simpan ke Nextcloud</button>
-  </form>
+  <button type="button" class="btn-submit" onclick="simpanData()">🚀 Simpan ke Nextcloud</button>
 
   <script>
-    // Inisialisasi Telegram WebApp
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Membuka tampilan menjadi layar penuh
+    tg.expand();
 
-    // Mengambil data pengguna dari Telegram
     const user = tg.initDataUnsafe?.user;
     if (user) {
       document.getElementById('userName').innerText = `${user.first_name} ${user.last_name || ''}`;
-      document.getElementById('userId').innerText = `ID: ${user.id}`;
-      document.getElementById('userAvatar').innerText = user.first_name ? user.first_name[0] : 'U';
+      document.getElementById('userId').innerText = user.id;
     }
 
-    let selectedFiles = [];
-
-    function handleFiles(files) {
-      const fileList = document.getElementById('fileList');
-      fileList.innerHTML = '';
-      selectedFiles = Array.from(files);
-
-      selectedFiles.forEach((file, index) => {
-        const item = document.createElement('div');
-        item.className = 'file-item';
-        item.innerHTML = `
-          <span>📄 ${file.name}</span>
-          <span style="color: var(--hint-color);">${(file.size / 1024).toFixed(1)} KB</span>
-        `;
-        fileList.appendChild(item);
-      });
-    }
-
-    function sendDataToBot() {
+    function simpanData() {
       const title = document.getElementById('title').value;
       const folder = document.getElementById('folder').value;
       const description = document.getElementById('description').value;
 
       if (!title) {
-        tg.showAlert('Mohon isi judul dokumen terlebih dahulu!');
+        tg.showAlert('Judul dokumen tidak boleh kosong!');
         return;
       }
 
-      // Menyusun data payload yang akan dikirim ke Bot Backend
+      // Payload data yang dikirim ke Telegram Bot (bot.py)
       const payload = {
-        action: "upload_data",
-        user_id: user ? user.id : null,
-        data: {
-          title: title,
-          folder: folder,
-          description: description,
-          filesCount: selectedFiles.length,
-          fileNames: selectedFiles.map(f => f.name)
-        }
+        title: title,
+        folder: folder,
+        description: description
       };
 
-      // Mengirimkan data dalam bentuk JSON String ke Telegram Bot
       tg.sendData(JSON.stringify(payload));
     }
   </script>
